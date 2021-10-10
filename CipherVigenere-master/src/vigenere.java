@@ -1,9 +1,6 @@
-import java.sql.SQLOutput;
+import java.nio.file.Files;
 import java.util.Locale;
 import java.util.Scanner;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,9 +32,7 @@ public class vigenere {
 
         for (int i=0; i< textn.length; i++) {
             text[i] = abc[textn[i]];
-            //System.out.print(String.valueOf(text[i]));
         }
-        //System.out.println("Tamano: " + text.length);
         return text;
     }
 
@@ -79,17 +74,12 @@ public class vigenere {
 
         for(int i=0; i<pt.length()/iv.length(); i++) {
             m[i] = pt.substring(iv.length()*i, iv.length()*(i+1));
-            //System.out.println("Tamano:" + m[i].length());
         }
-        //System.out.println("Tamano:" + m.length);
         return m;
     }
 
     static String modeCBCcipher(String pt, String iv,char[] abc,String key)
     {
-        //byte[] decodedBytes = Base64.getDecoder().decode(pt);
-        //String decodedString = new String(decodedBytes);
-
         String[] divideText=dividePlainText(pt,iv,abc);
         String ct="";
 
@@ -105,7 +95,7 @@ public class vigenere {
             ct+=iv;
             i++;
         }while (divideText[i]!=null);
-        System.out.println("Ciphertext" + ct);
+        //System.out.println("Ciphertext" + ct);
         return ct;
     }
 
@@ -140,23 +130,15 @@ public class vigenere {
         Path path = Paths.get("");
         String directoryName = path.toAbsolutePath().toString();
 
-        String res = "";
-        String cadena;
-
         directoryName+="\\"+dirActual+"\\"+fileName+".txt";
 
-
-        FileReader f = new FileReader(directoryName);
-        BufferedReader b = new BufferedReader(f);
-        while((cadena = b.readLine())!=null) {
-            res += cadena;
-        }
-        b.close();
+        byte[] source = Files.readAllBytes(Path.of(directoryName));
+        String message = new String(source);
 
         if(opc==1){
-            return res.toLowerCase(Locale.ROOT);
+            return message.toLowerCase(Locale.ROOT);
         }else {
-            byte[] decodedBytes = Base64.getDecoder().decode(res);
+            byte[] decodedBytes = Base64.getDecoder().decode(message);
             String decodedString = new String(decodedBytes);
             //decodedString.toLowerCase(Locale.ROOT);
             return decodedString;
@@ -176,10 +158,11 @@ public class vigenere {
 
             if(opc==1){
                 pw.write(Base64.getEncoder().encodeToString(text.getBytes()));
+                System.out.println("Ciphertext stored correctly");
             }else{
                 pw.write(text);
+                System.out.println("Decrypted text stored correctly");
             }
-
 
             pw.close();
         }
@@ -200,7 +183,6 @@ public class vigenere {
         String iv = reader.nextLine();
         System.out.println("Write the key:");
         String key = reader.nextLine();
-        //System.out.println("Abecedario:" + abc.length );
 
         if(iv.length()!=key.length()) {
             do {
