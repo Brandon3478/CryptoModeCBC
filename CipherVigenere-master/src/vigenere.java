@@ -1,8 +1,17 @@
+import java.sql.SQLOutput;
+import java.util.Locale;
+import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Scanner;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.*;
+
+
 
 public class vigenere {
 
@@ -24,8 +33,11 @@ public class vigenere {
     static char[] findchars(int[] textn, char[]abc){
         char[]text= new char[textn.length];
 
-        for (int i=0; i< textn.length; i++)
-            text[i]=abc[textn[i]];
+        for (int i=0; i< textn.length; i++) {
+            text[i] = abc[textn[i]];
+            //System.out.print(String.valueOf(text[i]));
+        }
+        //System.out.println("Tamano: " + text.length);
         return text;
     }
 
@@ -47,9 +59,9 @@ public class vigenere {
         }
         else{
             for(int i=0; i< ptn.length;i++) {
-                ptn[i]=(ptn[i]-keyn[i])% abc.length;
-                if(ptn[i]<0)
-                    ptn[i]= abc.length+ptn[i];
+                ptn[i] = (ptn[i] - keyn[i]) % abc.length;
+                if (ptn[i] < 0)
+                    ptn[i] = abc.length + ptn[i];
             }
             return String.valueOf(findchars(ptn,abc));
         }
@@ -67,25 +79,17 @@ public class vigenere {
 
         for(int i=0; i<pt.length()/iv.length(); i++) {
             m[i] = pt.substring(iv.length()*i, iv.length()*(i+1));
+            //System.out.println("Tamano:" + m[i].length());
         }
+        //System.out.println("Tamano:" + m.length);
         return m;
-    }
-
-    static String fileMessage(String fileName) throws IOException {
-            String res = "";
-            String cadena;
-            FileReader f = new FileReader(fileName);
-            BufferedReader b = new BufferedReader(f);
-            while((cadena = b.readLine())!=null) {
-                res += cadena;
-            }
-            b.close();
-            //System.out.println(res);
-            return res;
     }
 
     static String modeCBCcipher(String pt, String iv,char[] abc,String key)
     {
+        //byte[] decodedBytes = Base64.getDecoder().decode(pt);
+        //String decodedString = new String(decodedBytes);
+
         String[] divideText=dividePlainText(pt,iv,abc);
         String ct="";
 
@@ -101,7 +105,7 @@ public class vigenere {
             ct+=iv;
             i++;
         }while (divideText[i]!=null);
-
+        System.out.println("Ciphertext" + ct);
         return ct;
     }
 
@@ -131,23 +135,89 @@ public class vigenere {
         return ot;
     }
 
+    static String fileMessage(String fileName, int opc) throws IOException {
+        String dirActual = "Text";
+        Path path = Paths.get("");
+        String directoryName = path.toAbsolutePath().toString();
 
-      public static void main (String[]args) throws IOException {
-          char abc[]={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ',',','.','-','\''};
+        String res = "";
+        String cadena;
 
-          Scanner reader = new Scanner(System.in);
-          System.out.println("Write the name of the file you want to encrypt (with extension):");
-          String pt = reader.nextLine();
-          System.out.println("Write the IV:");
-          String iv= reader.nextLine();
-          System.out.println("Write the key:");
-          String key= reader.nextLine();
-          String plaintext = fileMessage(pt);
+        directoryName+="\\"+dirActual+"\\"+fileName+".txt";
 
-          System.out.println("to encrypt press 1 to decrypt 2");
-          int elec= reader.nextInt();
 
-          System.out.println(modeCBCcipher(plaintext,iv,abc,key));
-          System.out.println(modeCBCdecipher(modeCBCcipher(plaintext,iv,abc,key),iv,abc,key));
-      }
+        FileReader f = new FileReader(directoryName);
+        BufferedReader b = new BufferedReader(f);
+        while((cadena = b.readLine())!=null) {
+            res += cadena;
+        }
+        b.close();
+
+        if(opc==1){
+            return res.toLowerCase(Locale.ROOT);
+        }else {
+            byte[] decodedBytes = Base64.getDecoder().decode(res);
+            String decodedString = new String(decodedBytes);
+            //decodedString.toLowerCase(Locale.ROOT);
+            return decodedString;
+        }
+    }
+
+    static void saveText(String text,String fileName, int opc) {
+        String dirActual = "Text";
+        Path path = Paths.get("");
+        String directoryName = path.toAbsolutePath().toString();
+
+        directoryName+="\\"+dirActual+"\\"+fileName+"Edited.txt";
+
+        try {
+            File fileText = new File(directoryName);
+            FileWriter pw = new FileWriter(fileText, true);
+
+            if(opc==1){
+                pw.write(Base64.getEncoder().encodeToString(text.getBytes()));
+            }else{
+                pw.write(text);
+            }
+
+
+            pw.close();
+        }
+        catch (Exception e) {
+            System.out.println("Error writing text");
+        }
+    }
+
+
+    public static void main (String[]args) throws  IOException{
+        char abc[]={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' ',',','.','\n','’','-'};
+
+        Scanner reader = new Scanner(System.in);
+
+        System.out.println("Write the file:");
+        String namefile= reader.nextLine();
+        System.out.println("Write the IV:");
+        String iv = reader.nextLine();
+        System.out.println("Write the key:");
+        String key = reader.nextLine();
+        //System.out.println("Abecedario:" + abc.length );
+
+        if(iv.length()!=key.length()) {
+            do {
+                System.out.println("Please try again the IV and the key will have the same size");
+                System.out.println("Write the IV:");
+                iv = reader.nextLine();
+                System.out.println("Write the key:");
+                key = reader.nextLine();
+            } while (iv.length() != key.length());
+        }
+
+        System.out.println("to encrypt press 1 to decrypt 2");
+        int elec= reader.nextInt();
+
+        switch (elec){
+            case 1-> saveText(modeCBCcipher(fileMessage(namefile,1),iv,abc,key),namefile,1);
+            case 2-> saveText(modeCBCdecipher(fileMessage(namefile,2),iv,abc,key),namefile,2);
+        }
+    }
 }
